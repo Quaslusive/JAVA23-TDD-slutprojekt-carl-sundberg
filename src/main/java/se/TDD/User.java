@@ -51,7 +51,15 @@ public class User {
         this.balance += amount;
     }
 
-    public void withdraw(double amount) {
-        this.balance -= amount;
+    public boolean withdraw(double amount) {
+        if (amount <= balance) {
+            this.balance -= amount;
+            return true ;
+        } else {
+            return false;
+        }
+    }
+    public boolean verifyPin(String inputPin) {
+        return inputPin.equals(this.pin);
     }
 }

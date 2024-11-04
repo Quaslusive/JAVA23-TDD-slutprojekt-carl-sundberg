@@ -1,6 +1,9 @@
 package se.TDD;
 public interface BankInterface {
-    public User getUserById(String id);
-
-    public boolean isCardLocked(String userId);
+    User getUserById(String id);
+    boolean isCardLocked(String userId);
+    void lockCard(String userId);
+    double getBalance(String userId);
+    void deposit(String userId, int amount);
+    void withdraw(String userId, int amount);
 }
