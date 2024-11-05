@@ -8,7 +8,11 @@ public class Bank implements BankInterface {
     private Map<String, User> users = new HashMap<>();
 
     public Bank() {
-        users.put("420", new User("0069", "14512", 1000.0));
+        users.put("420", new User("420", "0034", 1000.0));
+    }
+
+    public void addUserForTesting(String id, User user) {
+        users.put(id, user);
     }
 
     @Override
@@ -22,16 +26,12 @@ public class Bank implements BankInterface {
         return user != null && user.isLocked();
     }
 
-    @Override
-    public boolean isLockCard(String userId) {
-        User user = users.get(userId);
-        return user != null && user.isLocked();
-    }
+
     @Override
     public void lockCard(String userId) {
         User user = users.get(userId);
         if (user != null) {
-            user.lockCard(true);
+            user.lockCard();
 
         }
     }
@@ -45,15 +45,17 @@ public class Bank implements BankInterface {
     public void deposit(String cardId, double amount) {
         User user = users.get(cardId);
         if (user != null) {
-            user.setBalance(user.getBalance() + amount);
+            user.deposit(amount);
         }
     }
 
     @Override
     public void withdraw(String cardId, double amount) {
         User user = users.get(cardId);
-        if (user != null && user.getBalance() >= amount) {
-            user.setBalance(user.getBalance() - amount);
+        if (user != null && user.withdraw(amount)) {
+            System.out.println("Withdrawal successful");
+        } else {
+            System.err.println("Withdrawal failed");
         }
     }
 

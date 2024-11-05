@@ -4,6 +4,8 @@ public interface BankInterface {
     boolean isCardLocked(String userId);
     void lockCard(String userId);
     double getBalance(String userId);
-    void deposit(String userId, int amount);
-    void withdraw(String userId, int amount);
+    void deposit(String cardId, double amount);
+    void withdraw(String userId, double amount);
+
+
 }
