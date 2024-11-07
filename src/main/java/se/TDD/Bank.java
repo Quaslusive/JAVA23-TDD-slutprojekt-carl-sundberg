@@ -8,7 +8,8 @@ public class Bank implements BankInterface {
     private Map<String, User> users = new HashMap<>();
 
     public Bank() {
-        users.put("420", new User("420", "0034", 1000.0));
+        users.put("test1", new User("test1", "0034", 1000.0));
+        users.put("test2", new User("Pawlo Picasso", "0069", 1234567.124));
     }
 
     public void addUserForTesting(String id, User user) {
@@ -50,14 +51,15 @@ public class Bank implements BankInterface {
     }
 
     @Override
-    public void withdraw(String cardId, double amount) {
+    public boolean withdraw(String cardId, double amount) {
         User user = users.get(cardId);
         if (user != null && user.withdraw(amount)) {
-            System.out.println("Withdrawal successful");
-        } else {
-            System.err.println("Withdrawal failed");
+            System.out.println("Uttag framgångsrik");
+            return true;
         }
-    }
+            System.err.println("Uttag misslyckades :(");
+            return false;
+        }
 
     public static String getBankName() {
         return BANK_NAME;
