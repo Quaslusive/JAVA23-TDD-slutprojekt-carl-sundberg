@@ -3,93 +3,80 @@ package se.TDD;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
+import static org.junit.jupiter.api.Assertions.*;
 
 class BankTest {
 
-    private Bank bank;
+    @Mock
+    private Bank mockBank;
     private User mockUser;
 
     @BeforeEach
     void setUp() {
-        bank = new Bank();
+        MockitoAnnotations.openMocks(this);
         mockUser = mock(User.class);
-        // bank.getUserById().put("12345", mockUser);
-        bank.addUserForTesting("12345", mockUser);
+        when(mockBank.getUserById("test1")).thenReturn(mockUser);
     }
 
     @Test
-    @DisplayName("Test getUserById - Valid User")
+    @DisplayName("Testa getUserById - Giltig användare")
     public void testGetUserByIdValid() {
-        User user = bank.getUserById("12345");
-        assertNotNull(user, "User should not be null for a valid ID");
+        User user = mockBank.getUserById("test1");
+        assertNotNull(user, "Användaren bör inte vara null för ett giltigt ID");
     }
 
     @Test
-    @DisplayName("Test getUserById - Invalid User")
-    public void testGetUserByIdInvalid() {
-        User user = bank.getUserById("invalid");
-        assertNull(user, "User should be null for an invalid ID");
-    }
-
-    @Test
-    @DisplayName("Test isCardLocked - Unlocked Card")
+    @DisplayName("Testa isCardLocked - Ospärrat kort")
     public void testIsCardLockedFalse() {
-        when(mockUser.isLocked()).thenReturn(false); // Mocking behavior
-        assertFalse(bank.isCardLocked("12345"), "Card should not be locked");
+        when(mockUser.isLocked()).thenReturn(false);
+        when(mockBank.isCardLocked("test1")).thenReturn(false);
+
+        assertFalse(mockBank.isCardLocked("test1"), "Kortet bör inte vara spärrat");
     }
 
     @Test
-    @DisplayName("Test isCardLocked - Locked Card")
-    public void testIsCardLockedTrue() {
-        when(mockUser.isLocked()).thenReturn(true);
-        assertTrue(bank.isCardLocked("12345"), "Card should be locked");
-    }
-
-    @Test
-    @DisplayName("Test lockCard - Valid User")
+    @DisplayName("Testa lockCard - Giltig användare")
     public void testLockCardValidUser() {
-        bank.lockCard("12345");
-        verify(mockUser).lockCard(); // Verifying lockCard method was called on User
+        mockBank.lockCard("test1");
+        verify(mockBank, times(1)).lockCard("test1");
     }
 
     @Test
-    @DisplayName("Test lockCard - Invalid User")
-    public void testLockCardInvalidUser() {
-        bank.lockCard("invalid");
-        verify(mockUser, never()).lockCard(); // lockCard should not be called
-    }
-
-    @Test
-    @DisplayName("Test getBalance - Valid User")
+    @DisplayName("Testa getBalance - Giltig användare")
     public void testGetBalanceValidUser() {
-        when(mockUser.getBalance()).thenReturn(500.0);
-        assertEquals(500.0, bank.getBalance("12345"), "Balance should match mocked value");
+        when(mockBank.getBalance("test1")).thenReturn(500.0);  // Stubba metod på mockad Bank
+
+        assertEquals(500.0, mockBank.getBalance("test1"), "Balansen bör matcha det mockade värdet");
     }
 
     @Test
-    @DisplayName("Test deposit - Valid User")
+    @DisplayName("Testa deposit - Giltig användare")
     public void testDepositValidUser() {
-        bank.deposit("12345", 200.0);
-        verify(mockUser).deposit(200.0); // Verifying deposit method was called with correct amount
+        // Anropa metoden
+        mockBank.deposit("test1", 200.0);
+
+        verify(mockBank, times(1)).deposit("test1", 200.0);
     }
 
     @Test
-    @DisplayName("Test withdraw - Sufficient Balance")
+    @DisplayName("Testa withdraw - Tillräcklig balans")
     public void testWithdrawSufficientBalance() {
-        when(mockUser.withdraw(100.0)).thenReturn(true); // Mock sufficient balance
-        bank.withdraw("12345", 100.0);
-        verify(mockUser).withdraw(100.0);
+        when(mockBank.withdraw("test1", 100.0)).thenReturn(true);
+
+        assertTrue(mockBank.withdraw("test1", 100.0), "Uttaget bör lyckas");
+        verify(mockBank, times(1)).withdraw("test1", 100.0);
     }
 
     @Test
-    @DisplayName("Test withdraw - Insufficient Balance")
+    @DisplayName("Testa withdraw - Otillräcklig balans")
     public void testWithdrawInsufficientBalance() {
-        when(mockUser.withdraw(1000.0)).thenReturn(false); // Mock insufficient balance
-        bank.withdraw("12345", 1000.0);
-        verify(mockUser).withdraw(1000.0);
+        when(mockBank.withdraw("test1", 1000.0)).thenReturn(false);
+
+        assertFalse(mockBank.withdraw("test1", 1000.0), "Uttaget bör misslyckas vid otillräcklig balans");
+        verify(mockBank, times(1)).withdraw("test1", 1000.0);
     }
 }

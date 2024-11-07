@@ -60,6 +60,6 @@ public class User {
         }
     }
     public boolean verifyPin(String inputPin) {
-        return inputPin.equals(this.pin);
+        return this.pin.equals(inputPin);
     }
 }
