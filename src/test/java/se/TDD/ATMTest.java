@@ -22,9 +22,9 @@ class ATMTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        mockBankInterface = mock(BankInterface.class);
         atm = new ATM(mockBankInterface);
 
+        // Skapa en delvis mockad användare med spy
         mockUser = spy(new User("test1", "0034", 1000.0));
     }
 
@@ -38,6 +38,15 @@ class ATMTest {
 
         verify(mockBankInterface, times(1)).isCardLocked("test1");
         verify(mockBankInterface, times(1)).getUserById("test1");
+    }
+
+    @Test
+    @DisplayName("Testa kortinsättning - Ogiltigt kort")
+    void testInsertCardInvalid() {
+        when(mockBankInterface.getUserById("invalidCard")).thenReturn(null);
+
+        assertFalse(atm.insertCard("invalidCard"), "kortet bör inte accepteras om det inte finns");
+        verify(mockBankInterface, times(1)).isCardLocked("invalidCard");
     }
 
     @Test
@@ -58,27 +67,24 @@ class ATMTest {
         when(mockBankInterface.isCardLocked("test1")).thenReturn(false);
 
         atm.insertCard("test1");
-
         assertTrue(atm.enterPin("0034"), "PIN bör vara korrekt och returnera true");
-
-        assertEquals(0, mockUser.getFailedAttempts(),
-                "Antalet misslyckade försök bör återställas efter korrekt PIN-inmatning");
+        assertEquals(0, mockUser.getFailedAttempts(), "Misslyckade försök bör återställas efter korrekt PIN-inmatning");
     }
 
     @Test
-    @DisplayName("Test av PIN-inmatning - Felaktig PIN med låsning")
-    void testEnterPinIncorrectPinWithLock() {
+    @DisplayName("Test av PIN-inmatning - Felaktig PIN")
+    void testEnterPinIncorrect() {
         when(mockBankInterface.getUserById("test1")).thenReturn(mockUser);
-        when(mockBankInterface.isCardLocked("test1")).thenReturn(false);
         atm.insertCard("test1");
 
-        for (int i = 0; i < 3; i++) {
-            assertFalse(atm.enterPin("0000"), "Varje felaktig PIN-inmatning bör returnera false");
-        }
+        assertFalse(atm.enterPin("0000"), "PIN bör vara felaktig");
+        assertEquals(1, mockUser.getFailedAttempts(), "Antal misslyckade försök bör öka");
 
+        assertFalse(atm.enterPin("1111"), "PIN bör vara felaktig");
+        assertEquals(2, mockUser.getFailedAttempts(), "Antal misslyckade försök bör öka");
+
+        assertFalse(atm.enterPin("2222"), "Kortet bör låsas efter tre misslyckade försök");
         verify(mockBankInterface, times(1)).lockCard("test1");
-        doReturn(true).when(mockUser).isLocked();
-        assertTrue(mockUser.isLocked(), "Användaren bör vara låst efter tre misslyckade försök");
     }
 
     @Test
@@ -89,8 +95,57 @@ class ATMTest {
 
         atm.insertCard("test1");
         atm.enterPin("0034");
-
         atm.checkBalance();
+
         verify(mockBankInterface, times(1)).getBalance("test1");
+    }
+
+    @Test
+    @DisplayName("Test av insättning")
+    void testDeposit() {
+        when(mockBankInterface.getUserById("test1")).thenReturn(mockUser);
+
+        atm.insertCard("test1");
+        atm.enterPin("0034");
+        atm.depositMoney(200.0);
+
+        verify(mockBankInterface, times(1)).deposit("test1", 200.0);
+    }
+
+    @Test
+    @DisplayName("Test av uttag - Tillräcklig balans")
+    void testWithdrawSufficientBalance() {
+        when(mockBankInterface.getUserById("test1")).thenReturn(mockUser);
+        when(mockBankInterface.getBalance("test1")).thenReturn(1000.0);
+        when(mockBankInterface.withdraw("test1", 500.0)).thenReturn(true);
+
+        atm.insertCard("test1");
+        atm.enterPin("0034");
+
+        assertTrue(atm.withdrawMoney(500.0), "Uttaget bör lyckas med tillräcklig balans");
+
+        verify(mockBankInterface, times(1)).withdraw("test1", 500.0);
+    }
+
+    @Test
+    @DisplayName("Test av uttag - Otillräcklig balans")
+    void testWithdrawInsufficientBalance() {
+        when(mockBankInterface.getUserById("test1")).thenReturn(mockUser);
+        when(mockBankInterface.getBalance("test1")).thenReturn(1000.0);
+        when(mockBankInterface.withdraw("test1", 1500.0)).thenReturn(false);
+
+        atm.insertCard("test1");
+        atm.enterPin("0034");
+
+        assertFalse(atm.withdrawMoney(1500.0), "Uttaget bör misslyckas vid otillräcklig balans");
+
+        verify(mockBankInterface, times(1)).withdraw("test1", 1500.0);
+    }
+
+    @Test
+    @DisplayName("Test av bankens namn, E-Corp")
+    void testBankName() {
+        assertEquals("E-Corp ", Bank.getBankName(), "Bankens namn bör vara korrekt 💰");
+
     }
 }

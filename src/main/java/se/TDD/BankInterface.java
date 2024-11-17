@@ -10,7 +10,7 @@ public interface BankInterface {
 
     double getBalance(String userId);
 
-    void deposit(String cardId, double amount);
+    void deposit(String userId, double amount);
 
     boolean withdraw(String userId, double amount);
 

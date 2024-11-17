@@ -12,10 +12,6 @@ public class Bank implements BankInterface {
         users.put("test2", new User("Pawlo Picasso", "0069", 1234567.124));
     }
 
-    public void addUserForTesting(String id, User user) {
-        users.put(id, user);
-    }
-
     @Override
     public User getUserById(String id) {
         return users.get(id);
@@ -37,29 +33,24 @@ public class Bank implements BankInterface {
         }
     }
     @Override
-    public double getBalance(String cardId) {
-        User user = users.get(cardId);
+    public double getBalance(String userId) {
+        User user = users.get(userId);
         return user != null ? user.getBalance() : 0.0;
     }
 
     @Override
-    public void deposit(String cardId, double amount) {
-        User user = users.get(cardId);
+    public boolean withdraw(String userId, double amount) {
+        User user = users.get(userId);
+        return user != null && user.withdraw(amount);
+    }
+
+    @Override
+    public void deposit(String userId, double amount) {
+        User user = users.get(userId);
         if (user != null) {
             user.deposit(amount);
         }
     }
-
-    @Override
-    public boolean withdraw(String cardId, double amount) {
-        User user = users.get(cardId);
-        if (user != null && user.withdraw(amount)) {
-            System.out.println("Uttag framgångsrik");
-            return true;
-        }
-            System.err.println("Uttag misslyckades :(");
-            return false;
-        }
 
     public static String getBankName() {
         return BANK_NAME;
